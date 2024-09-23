@@ -12,8 +12,9 @@ from pydantic import Field
 
 import ollama
 
+
 class OllamaLLM(CustomLLM):
-    base_url: str = Field(default="http://192.168.50.35:11434/api/generate")
+    base_url: str = Field(default="http://localhost:11434/api/generate")
     modelname: str = Field(..., description="Name of the Ollama model to use")
     context_window: int = Field(default=4096, description="Context window size")
     num_output: int = Field(default=256, description="Number of output tokens")
@@ -41,7 +42,7 @@ class OllamaLLM(CustomLLM):
 
     @llm_completion_callback()
     def stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
-        stream = ollama.chat(#TODO how does it know the base_url???!!
+        stream = ollama.chat(  #TODO how does it know the base_url???!!
             model=self.modelname,
             messages=[{'role': 'user', 'content': 'Why is the sky blue?'}],
             stream=True,
@@ -51,6 +52,7 @@ class OllamaLLM(CustomLLM):
             delta = chunk['message']['content']
             full_response += delta
             yield CompletionResponse(text=full_response, delta=delta)
+
 
 # Example usage:
 if __name__ == "__main__":
@@ -64,5 +66,3 @@ if __name__ == "__main__":
     for chunk in ollama_llm.stream_complete("Tell me a story."):
         print(chunk.delta, end='', flush=True)
     print()  # New line after streaming is complete
-
-
